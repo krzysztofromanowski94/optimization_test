@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package protopackage;
+
+message ProtoMessage{
+    required string MyNiceMessage = 1;
+	required double MyNiceFloat = 2;
+
+
+
+    //enum iType{
+    //    float64 = 0;
+    //    string = 1;
+    //}
+}
+
+

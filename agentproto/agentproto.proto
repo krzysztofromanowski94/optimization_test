@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package agentproto;
+
+message AgentData{
+	required double x = 1;
+	required double y = 2;
+	required double fitness = 3;
+	required int32 average = 4;
+
+}
