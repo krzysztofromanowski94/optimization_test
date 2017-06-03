@@ -1,0 +1,3 @@
+[submodule "client/goblackholes"]
+	path = client/goblackholes
+	url = https://github.com/krzysztofromanowski94/goblackholes.git

@@ -14,6 +14,8 @@ import (
 
 var(
         tbTestFunctions = []string{""}
+        tbResults = []string{""}
+        tbHistory = []string{""}
 )
 
 func Start(address, dblogin, dbpass string) {
@@ -35,7 +37,7 @@ func Start(address, dblogin, dbpass string) {
                 log.Println("Database closed")
         }()
 
-        err := initdatabase(database, )
+        err = initdatabase(database, tbTestFunctions, tbResults, tbHistory)
         if err != nil {
                 log.Fatal(err)
         }

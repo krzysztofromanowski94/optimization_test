@@ -6,9 +6,10 @@ import (
 	//"fmt"
 	"log"
 	"fmt"
+	"errors"
 )
 
-func initdatabase(database *sql.DB, tbAlgorithms, tbCode, tbTestFunctions, tbResults, tbHistory []string) {
+func initdatabase(database *sql.DB, tbTestFunctions, tbResults, tbHistory []string) error {
 	// database name to be initialized:
 	dbName := "opt_test"
 
@@ -27,7 +28,7 @@ func initdatabase(database *sql.DB, tbAlgorithms, tbCode, tbTestFunctions, tbRes
 			fmt.Println(queryString)
 			if queryString == dbName {
 				log.Println("Database", dbName, "exists")
-				return
+				return errors.New("Database " + dbName + " exists")
 			}
 		}
 	}
@@ -66,5 +67,5 @@ func initdatabase(database *sql.DB, tbAlgorithms, tbCode, tbTestFunctions, tbRes
 
 	}
 
-
+	return nil
 }

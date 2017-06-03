@@ -4,21 +4,20 @@ package protomessage;
 
 message Data{
     oneof Oneof{
-        AgentData agent = 1;
+        AgentType agent = 1;
         string algCode = 2;
         string funcCode = 3;
-        Return ret = 4;
+        ReturnType ret = 4;
     }
-    string retMessage = 5;
 
-    message AgentData{
+    message AgentType{
         double x = 1;
         double y = 2;
         double fitness = 3;
-        int32 average = 4;
+        uint64 step = 4;
         bool best = 5;
     }
-    message Return{
+    message ReturnType{
         bool good = 1;
         string message = 2;
     }

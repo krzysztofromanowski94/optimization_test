@@ -9,6 +9,8 @@ import (
 	//"github.com/golang/protobuf/proto"
 	//"os"
 	"time"
+	"github.com/krzysztofromanowski94/optimization_test/client/goblackholes"
+	"fmt"
 )
 
 var (
@@ -17,10 +19,22 @@ var (
 )
 
 func Start(address string) {
+	inputAgentChannel := make(chan *goblackholes.Agent)
+	go func() {
+		goblackholes.Start(inputAgentChannel)
+	}()
+
+	for {
+		fmt.Println(<-inputAgentChannel)
+	}
+
+
 	conn, err := net.Dial("tcp", address);
 	if err != nil {
 		log.Fatal(err)
 	}
+
+
 	//go func() {
 	//	i := 0.0
 	//	for {
