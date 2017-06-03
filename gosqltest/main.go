@@ -7,19 +7,6 @@ import (
 	"log"
 )
 
-func myQuery(database *sql.DB, queryStr string) []string {
-	var resultSlice []string
-	if query, err := database.Query(queryStr); err != nil { log.Println(err)
-	} else {
-		for query.Next() {
-			var queryString string
-			query.Scan(&queryString)
-			resultSlice = append(resultSlice, queryString)
-		}
-	}
-	return resultSlice
-}
-
 func main(){
 	fmt.Println("Hello")
 	database, err := sql.Open("mysql", "root:pass@/")
@@ -34,7 +21,7 @@ func main(){
 	}()
 
 
-	for _, str := range myQuery(database, "show databases"){
+	for _, str := range MyQuery(database, "show databases"){
 		fmt.Println(str)
 	}
 
