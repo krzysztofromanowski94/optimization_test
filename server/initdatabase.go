@@ -2,69 +2,30 @@ package server
 
 import (
 	"database/sql"
-	_"github.com/go-sql-driver/mysql"
-	//"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"fmt"
-	"errors"
 )
 
 func initdatabase(database *sql.DB, tbTestFunctions, tbResults, tbHistory []string) error {
-	// database name to be initialized:
-	dbName := "opt_test"
 
-
-	// check if @dbName exists
-	query, err := database.Query("show databases")
+	err := addToDB(database, tbTestFunctions)
 	if err != nil {
-		log.Fatal(err)
-	} else {
-		for query.Next() {
-			var queryString string
-			err := query.Scan(&queryString)
-			if err != nil {
-				log.Println(err)
-			}
-			fmt.Println(queryString)
-			if queryString == dbName {
-				log.Println("Database", dbName, "exists")
-				return errors.New("Database " + dbName + " exists")
-			}
-		}
+		log.Println(err)
+	}
+	err = addToDB(database, tbResults)
+	if err != nil {
+		log.Println(err)
+	}
+	err = addToDB(database, tbHistory)
+	if err != nil {
+		log.Println(err)
 	}
 
-	// create table algorithms
-	{
-		if _, err := database.Exec("CREATE TABLE algorithms (" +
-			"id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-			"name VARCHAR(50) NOT NULL," +
-			"code MEDIUMTEXT NULL)"); err != nil {
-			log.Println(err)
-		} else {
-			log.Println("Created table algorithms")
+	for i, exec := range mysqlOperations{
+		err := addToDB(database, exec)
+		if err != nil{
+			log.Printf("mysqlOperations[%d] %s", i, err)
 		}
-	}
-	// insert something to algorithms
-	{
-		_, err := database.Exec("INSERT  INTO algorithms VALUES (NULL, 'new code', 'blabla')")
-		if err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	//
-	{
-		query, err := database.Query("SELECT * FROM algorithms")
-		if err != nil {
-			log.Println(err)
-		}
-		for query.Next(){
-			var id, name, code string
-			query.Scan(&id, &name, &code)
-			fmt.Println(id, name, code)
-	}
-
 	}
 
 	return nil
