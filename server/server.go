@@ -261,6 +261,7 @@ func (t *optimizationTestServer) GetHistory(stream protomessage.OptimizationTest
 		y       float64
 		fitness float64
 		best    string
+		query *sql.Rows
 	)
 
 	for {
@@ -274,15 +275,20 @@ func (t *optimizationTestServer) GetHistory(stream protomessage.OptimizationTest
 		}
 		listAgent := make([]*protomessage.AgentType, 0)
 		// pkt
-		query, err := database.Query("SELECT x, y, fitness, best FROM history WHERE history.result_id=? AND history.step=? ORDER BY fitness ASC",
-			get.ResultId, get.Step)
+		if get.Step == -1{
+			query, err = database.Query("SELECT x, y, fitness, best FROM history WHERE result_id=? AND best=1 ORDER BY step ASC",
+				get.ResultId)
+		} else {
+			query, err = database.Query("SELECT x, y, fitness, best FROM history WHERE history.result_id=? AND history.step=? ORDER BY fitness ASC",
+				get.ResultId, get.Step)
+		}
 		if err != nil {
 			log.Println("GetHistory queue selec from history err:\n", err)
 			return err
 		}
 		for query.Next() {
 			query.Scan(&x, &y, &fitness, &best)
-			singleAgent := &protomessage.AgentType{x, y, fitness, get.Step, false}
+			singleAgent := &protomessage.AgentType{x, y, fitness, uint64(get.Step), false}
 			if best == "1"{
 				singleAgent.Best = true
 			}

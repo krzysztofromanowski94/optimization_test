@@ -105,17 +105,22 @@ func getResults() (count int) {
 func getHistory(result_id int){
 	var(
 		onlyBest bool
+		allBest bool
 	)
 	stream, err := client.GetHistory(context.Background())
 	if err != nil {
 		log.Println("getHistory init stream err: ", err)
 		stream.CloseSend()
 	}
-	i := uint64(0)
+	i := int64(0)
 	exitHistory := make(chan bool)
 	go func() {
 		for {
-			err = stream.Send(&protomessage.AskHistory{uint64(result_id), i})
+			if allBest {
+				err = stream.Send(&protomessage.AskHistory{uint64(result_id), -1})
+			} else {
+				err = stream.Send(&protomessage.AskHistory{uint64(result_id), i})
+			}
 			if err != nil {
 				log.Println("Send AskHistory err: ", err)
 			}
@@ -149,6 +154,8 @@ func getHistory(result_id int){
 					i--
 				case str == "t":
 					onlyBest = !onlyBest
+				case str == "f":
+
 				case str == "q":
 					exitHistory <- true
 					return
@@ -159,7 +166,7 @@ func getHistory(result_id int){
 							log.Println(err)
 							continue
 						}
-						i += uint64(step)
+						i += int64(step)
 						break
 					}
 				case strings.HasPrefix(str,"d-"):
@@ -173,7 +180,7 @@ func getHistory(result_id int){
 							i = 0
 							break
 						} else {
-							i -= uint64(step)
+							i -= int64(step)
 						}
 						break
 					}

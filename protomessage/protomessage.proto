@@ -34,7 +34,7 @@ message TBResults{
 
 message AskHistory{
     uint64 result_id = 1;
-    uint64 step = 2;
+    int64 step = 2;
 }
 message HistoryPage{
     repeated AgentType agent = 1;
