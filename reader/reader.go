@@ -38,10 +38,8 @@ func agentToStr(a *protomessage.AgentType) string {
 
 
 	if a.Best {
-		//str = fmt.Sprintf("X: %e\t\tY: %e\t\tFitness: %e\t\tBest", a.X, a.Y, a.Fitness)
 		str = xstr + ystr + fmt.Sprintf("Fitness: %e\tBest", a.Fitness)
 	} else {
-		//str = fmt.Sprintf("X: %e\t\tY: %e\t\tFitness: %e", a.X, a.Y, a.Fitness)
 		str = xstr + ystr + fmt.Sprintf("Fitness: %e", a.Fitness)
 	}
 
@@ -101,11 +99,6 @@ func getResults() (count int) {
 			result.Borders,
 			result.ResultDate,
 		)
-
-		//fmt.Println(result)
-		//for _, p := range result.{
-		//	fmt.Println(p)
-		//}
 	}
 }
 
@@ -131,7 +124,6 @@ func getHistory(result_id int){
 				log.Println("Get historyPage err: ", err)
 			}
 
-			//fmt.Println("Only bests:")
 			for _, agent := range historyPage.Agent {
 				switch onlyBest{
 				case true:
@@ -209,7 +201,6 @@ func initReader(){
 
 func Connect(address string) {
 	var err error
-	//connection, err = net.Dial("tcp", address)
 	grpcconn, err = grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
@@ -219,7 +210,6 @@ func Connect(address string) {
 }
 
 func CloseConnection() {
-	//err := connection.Close()
 	fmt.Println("closing")
 	err := grpcconn.Close()
 	if err != nil {

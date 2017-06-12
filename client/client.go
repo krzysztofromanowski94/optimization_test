@@ -89,7 +89,6 @@ func Compute() {
 			}
 		}()
 		newAgent := &protomessage.AgentType{}
-		newOneOf := &protomessage.Oneof{}
 		for {
 			if newBHAgent, ok := <- blackHolesAgentChannel; ok{
 				newAgent.Step = newBHAgent.Times
@@ -97,8 +96,7 @@ func Compute() {
 				newAgent.Best = newBHAgent.Best
 				newAgent.X = newBHAgent.X
 				newAgent.Y = newBHAgent.Y
-				newOneOf = &protomessage.Oneof{Union: &protomessage.Oneof_Agent{Agent: newAgent}}
-				oneofToServerChan <- newOneOf
+				oneofToServerChan <- &protomessage.Oneof{Union: &protomessage.Oneof_Agent{Agent: newAgent}}
 			} else {
 				return
 			}
@@ -230,7 +228,6 @@ func initCompute() {
 	blackHolesAgentChannel = make(chan *goblackholes.Agent, initVariables.AgentAmount)
 	quitBlackholes = make(chan bool, 1)
 	quitClient = make(chan bool, 1)
-	//stoppedListening = make(chan bool, 1)
 
 	newResult := &protomessage.ResultType{}
 	newResult.AgentAmount = uint64(initVariables.AgentAmount)
@@ -239,18 +236,6 @@ func initCompute() {
 	newResult.Borders = initVariables.Border.ToStr()
 
 	oneofToServerChan <- &protomessage.Oneof{&protomessage.Oneof_Result{newResult}}
-
-	//newResult := &protomessage.ResultType{TestFunc: typeOfFunctionStr, AgentAmount: uint64(agentAmount), Code: initVariables.TypeOfFucntion.StringEvaluation}
-	//newOneOf := &protomessage.Oneof{&protomessage.Oneof_Result{newResult}}
-	//
-	//bytes, err := proto.Marshal(newOneOf)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//_, err = connection.Write(bytes)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 }
 
 func Connect(address string) {

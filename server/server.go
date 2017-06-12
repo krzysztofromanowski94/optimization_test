@@ -214,7 +214,7 @@ func (t *optimizationTestServer) NewResult(oneofstream protomessage.Optimization
 
 func (t *optimizationTestServer) GetResults(askDummy *protomessage.AskDummy, stream protomessage.OptimizationTest_GetResultsServer) error {
 	// pkt: view / widok
-	query, err := database.Query("SELECT * FROM view_results")
+	query, err := database.Query("SELECT * FROM view_results ORDER BY id ASC")
 	if err != nil {
 		fmt.Println("GetResults query: ", err)
 		return err
@@ -305,7 +305,7 @@ func newServer() *optimizationTestServer {
 func Start(address, dblogin, dbpass string) {
 
 	var err error
-	database, err = sql.Open("mysql", "user:pass@/black_hole_test")
+	database, err = sql.Open("mysql", dblogin+":"+dbpass+"@/black_hole_test")
 	if err != nil {
 		log.Fatal(err)
 	} else {
