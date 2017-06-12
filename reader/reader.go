@@ -22,8 +22,8 @@ var(
 
 )
 
-func agentToStr(a *protomessage.AgentType) string {
-	var str, xstr, ystr string
+func agentToStr(a *protomessage.AgentType, showStep bool) string {
+	var str, xstr, ystr, stepstr string
 
 	if a.X >=0 {
 		xstr = fmt.Sprintf("X: %e          ", a.X)
@@ -36,11 +36,15 @@ func agentToStr(a *protomessage.AgentType) string {
 		ystr = fmt.Sprintf("Y: %e         ", a.Y)
 	}
 
+	if showStep {
+		stepstr = fmt.Sprintf("Step: %d          ", a.Step)
+}
+
 
 	if a.Best {
-		str = xstr + ystr + fmt.Sprintf("Fitness: %e\tBest", a.Fitness)
+		str = xstr + ystr + stepstr + fmt.Sprintf("Fitness: %e\tBest", a.Fitness)
 	} else {
-		str = xstr + ystr + fmt.Sprintf("Fitness: %e", a.Fitness)
+		str = xstr + ystr + stepstr + fmt.Sprintf("Fitness: %e", a.Fitness) + stepstr
 	}
 
 	return str
@@ -133,16 +137,17 @@ func getHistory(result_id int){
 				switch onlyBest{
 				case true:
 					if agent.Best {
-						fmt.Println(agentToStr(agent))
+						fmt.Println(agentToStr(agent, allBest))
 					}
 				case false:
-					fmt.Println(agentToStr(agent))
+					fmt.Println(agentToStr(agent, allBest))
 				}
 
 			}
+			allBest = false
 
 			fmt.Printf("Agents in step %d: %d\n", i, len(historyPage.Agent))
-			fmt.Println("Prev: a\tNext: d\tStep forward: d{+/-}n\tToggle view type: t\tQuit: q")
+			fmt.Println("Prev: a\tNext: d\tStep forward: d{+/-}n\tToggle view type: t\tShow all best: f\tQuit: q")
 			for scanner.Scan() {
 				str := scanner.Text()
 				switch  {
@@ -155,7 +160,7 @@ func getHistory(result_id int){
 				case str == "t":
 					onlyBest = !onlyBest
 				case str == "f":
-
+					allBest = !allBest
 				case str == "q":
 					exitHistory <- true
 					return

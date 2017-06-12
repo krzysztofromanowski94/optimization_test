@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -232,7 +233,10 @@ func (t *optimizationTestServer) GetResults(askDummy *protomessage.AskDummy, str
 			results_date string
 		)
 		err := query.Scan(&results_id, &test_functions_name, &test_functions_code, &results_agent_amount, &result_best_fitess, &result_steps, &result_borders, &results_date)
-		if err != nil {
+		errstr := fmt.Sprintf("%s", err)
+		if strings.Contains(errstr,"unsupported Scan, storing driver.Value type <nil> into type *string") {
+			fmt.Printf("Result id: %d in databse has empty <best> row\n", results_id)
+		} else if err != nil {
 			fmt.Println("GetResults results.Scan err: ", err)
 		}
 		result.ResultsId = results_id
@@ -261,6 +265,7 @@ func (t *optimizationTestServer) GetHistory(stream protomessage.OptimizationTest
 		y       float64
 		fitness float64
 		best    string
+		step	uint64
 		query *sql.Rows
 	)
 
@@ -276,10 +281,10 @@ func (t *optimizationTestServer) GetHistory(stream protomessage.OptimizationTest
 		listAgent := make([]*protomessage.AgentType, 0)
 		// pkt
 		if get.Step == -1{
-			query, err = database.Query("SELECT x, y, fitness, best FROM history WHERE result_id=? AND best=1 ORDER BY step ASC",
+			query, err = database.Query("SELECT x, y, fitness, best, step FROM history WHERE result_id=? AND best=1 ORDER BY step ASC",
 				get.ResultId)
 		} else {
-			query, err = database.Query("SELECT x, y, fitness, best FROM history WHERE history.result_id=? AND history.step=? ORDER BY fitness ASC",
+			query, err = database.Query("SELECT x, y, fitness, best, step FROM history WHERE history.result_id=? AND history.step=? ORDER BY fitness ASC",
 				get.ResultId, get.Step)
 		}
 		if err != nil {
@@ -287,8 +292,8 @@ func (t *optimizationTestServer) GetHistory(stream protomessage.OptimizationTest
 			return err
 		}
 		for query.Next() {
-			query.Scan(&x, &y, &fitness, &best)
-			singleAgent := &protomessage.AgentType{x, y, fitness, uint64(get.Step), false}
+			query.Scan(&x, &y, &fitness, &best, &step)
+			singleAgent := &protomessage.AgentType{x, y, fitness, step, false}
 			if best == "1"{
 				singleAgent.Best = true
 			}
