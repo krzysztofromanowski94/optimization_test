@@ -1,12 +1,12 @@
 package client
 
 import (
-	"github.com/krzysztofromanowski94/optimization_test/protomessage"
+	"github.com/krzysztofromanowski94/BHKulak/optimization_test/protokulak"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"bufio"
 	"fmt"
-	"github.com/krzysztofromanowski94/optimization_test/client/goblackholes"
+	"github.com/krzysztofromanowski94/BHKulak/optimization_test/client/goblackholes"
 	"os"
 	"strconv"
 	"log"
@@ -17,10 +17,10 @@ import (
 
 var (
 	grpcconn               *grpc.ClientConn
-	client 			protomessage.OptimizationTestClient
+	client			protokulak.BHServiceClient
 	testFunctions          []string = []string{"Rosenbrock", "Easom", "McCormick", "Write your own function"}
 	blackHolesAgentChannel chan *goblackholes.Agent
-	oneofToServerChan      chan *protomessage.Oneof
+	oneofToServerChan      chan *protokulak.Oneof
 	quitBlackholes         chan bool
 	quitClient             chan bool
 	acceptAgets bool = true
@@ -29,23 +29,51 @@ var (
 )
 
 
-func newResult(client protomessage.OptimizationTestClient){
+func newResult(/*client protokulak.BHService_DoBHAServer*/){
 	defer func(){
 		if rec := recover(); rec != nil{
 			fmt.Println("newResult recover: ", rec)
 		}
 	}()
 
-	newResult := <-oneofToServerChan
-	stream, err := client.NewResult(context.Background())
+	//newResult := <-oneofToServerChan
+	stream, err := client.DoBHA(context.Background())
 	if err != nil{
 		fmt.Println("NewResult init stream: ", err)
 	}
-	err = stream.Send(newResult)
+	err = stream.Send(&protokulak.Oneof{&protokulak.Oneof_Init{}})
 	if err != nil {
 		fmt.Println("NewResult stream: ", err)
 	}
 
+	initRcv, err := stream.Recv()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(initRcv)
+
+
+	switch union := initRcv.Union.(type){
+	case *protokulak.Oneof_NewResult:
+		fmt.Println("yeah, new result: ", union)
+
+	default:
+		log.Fatal("Lol, what is it? ", union)
+	}
+
+	err = stream.Send(&protokulak.Oneof{&protokulak.Oneof_Return{&protokulak.ReturnType{true, "o kurwa kurwa dziala"}}})
+	if err != nil {
+		log.Fatal("stream.Send oneof o kurwa dziala: ", err)
+	}
+
+
+	err = stream.CloseSend()
+	if err != nil {
+		log.Fatal("Close stream err: ", err)
+	}
+
+
+	return
 	for {
 		newResult, ok := <-oneofToServerChan
 		if !ok {
@@ -65,8 +93,11 @@ func newResult(client protomessage.OptimizationTestClient){
 			break
 		}
 	}
-	reply, err := stream.CloseAndRecv()
-	fmt.Println("Server reply: ", reply.Message)
+
+	err = stream.CloseSend()
+	if err != nil {
+		log.Println("CloseSend err: ", err)
+	}
 	quitClient <- true
 }
 
@@ -74,7 +105,7 @@ func Compute() {
 	initCompute()
 
 	go func() {
-		newResult(client)
+		newResult()
 	}()
 
 	fmt.Println("\nTo stop press any key...\n")
@@ -88,7 +119,7 @@ func Compute() {
 			if rec := recover(); rec != nil{
 			}
 		}()
-		newAgent := &protomessage.AgentType{}
+		newAgent := &protokulak.AgentType{}
 		for {
 			if newBHAgent, ok := <- blackHolesAgentChannel; ok{
 				newAgent.Step = newBHAgent.Times
@@ -96,7 +127,7 @@ func Compute() {
 				newAgent.Best = newBHAgent.Best
 				newAgent.X = newBHAgent.X
 				newAgent.Y = newBHAgent.Y
-				oneofToServerChan <- &protomessage.Oneof{Union: &protomessage.Oneof_Agent{Agent: newAgent}}
+				oneofToServerChan <- &protokulak.Oneof{Union: &protokulak.Oneof_Agent{Agent: newAgent}}
 			} else {
 				return
 			}
@@ -224,18 +255,18 @@ func initCompute() {
 	}()
 	initVariables.Border = borders
 
-	oneofToServerChan = make(chan *protomessage.Oneof, initVariables.AgentAmount)
+	//oneofToServerChan = make(chan *protomessage.Oneof, initVariables.AgentAmount)
 	blackHolesAgentChannel = make(chan *goblackholes.Agent, initVariables.AgentAmount)
 	quitBlackholes = make(chan bool, 1)
 	quitClient = make(chan bool, 1)
 
-	newResult := &protomessage.ResultType{}
+	newResult := &protokulak.ResultType{}
 	newResult.AgentAmount = uint64(initVariables.AgentAmount)
-	newResult.TestFunc = typeOfFunctionStr
+	newResult.TypeOfFunction = typeOfFunctionStr
 	newResult.Code = initVariables.TypeOfFucntion.StringEvaluation
 	newResult.Borders = initVariables.Border.ToStr()
 
-	oneofToServerChan <- &protomessage.Oneof{&protomessage.Oneof_Result{newResult}}
+	//oneofToServerChan <- &protomessage.Oneof{&protomessage.Oneof_Result{newResult}}
 }
 
 func Connect(address string) {
@@ -244,7 +275,7 @@ func Connect(address string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	client = protomessage.NewOptimizationTestClient(grpcconn)
+	//client = protomessage.NewOptimizationTestClient(grpcconn)
 
 }
 

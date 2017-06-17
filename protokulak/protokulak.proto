@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package protokulak;
+
+service BHService{
+    rpc DoBHA(stream Oneof) returns (stream Oneof) {}
+}
+
+message Oneof{
+    oneof union{
+        InitConnection init = 1;
+        ResultType newResult = 2;
+        AgentType agent = 3;
+        ReturnType return = 4;
+    }
+}
+
+message InitConnection{
+}
+
+message ResultType{
+    string typeOfFunction = 1;
+    uint64 agentAmount = 2;
+    string code = 3;
+    string borders = 4;
+}
+
+message AgentType{
+    double x = 1;
+    double y = 2;
+    double fitness = 3;
+    uint64 step = 4;
+    bool best = 5;
+}
+
+message ReturnType{
+    bool good = 1;
+    string message = 2;
+}
