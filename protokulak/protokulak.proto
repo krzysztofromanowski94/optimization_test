@@ -11,8 +11,9 @@ message Oneof{
         InitConnection init = 1;
         ResultType newResult = 2;
         AgentType agent = 3;
-        ReturnType return = 4;
+        ReturnType ret = 4;
     }
+    string type = 5;
 }
 
 message InitConnection{
